@@ -1,27 +1,37 @@
-FROM node:20-alpine AS deps
+# -----------------------------
+# 1. Builder Stage
+# -----------------------------
+FROM node:20-alpine AS builder
+
 WORKDIR /app
-COPY package.json package-lock.json* ./
+
+# Install dependencies
+COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copy source
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build Next.js standalone output
 RUN npm run build
 
+# -----------------------------
+# 2. Runner Stage
+# -----------------------------
 FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
+WORKDIR /app
+
+# Create non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
+# Copy standalone build
 COPY --from=builder --chown=appuser:appgroup /app/.next/standalone ./
 COPY --from=builder --chown=appuser:appgroup /app/.next/static ./.next/static
-COPY --from=builder --chown=appuser:appgroup /app/public ./public 2>/dev/null || true
+COPY --from=builder --chown=appuser:appgroup /app/public ./public
 
 USER appuser
+
 EXPOSE 3000
 
 CMD ["node", "server.js"]
