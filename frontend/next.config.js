@@ -6,9 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    optimizePackageImports: ['@stripe/stripe-js'],
-  },
+  optimizePackageImports: ['@stripe/stripe-js'],
 };
 
 module.exports = nextConfig;

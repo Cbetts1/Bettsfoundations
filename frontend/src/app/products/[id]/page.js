@@ -20,7 +20,8 @@ async function getProduct(id) {
 }
 
 export async function generateMetadata({ params }) {
-  const product = await getProduct(params.id);
+  const { id } = await params;
+  const product = await getProduct(id);
   if (!product) return { title: 'Not Found' };
   return {
     title: `${product.title} – Betts Foundations`,
@@ -29,7 +30,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ProductPage({ params }) {
-  const product = await getProduct(params.id);
+  const { id } = await params;
+  const product = await getProduct(id);
   if (!product) notFound();
 
   return (
